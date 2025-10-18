@@ -31,8 +31,6 @@ public partial class MotoServeContext : DbContext
 
     public virtual DbSet<MaintenanceSchedule> MaintenanceSchedules { get; set; }
 
-    public virtual DbSet<MaintenanceType> MaintenanceTypes { get; set; }
-
     public virtual DbSet<Mechanic> Mechanics { get; set; }
 
     public virtual DbSet<MechanicAccount> MechanicAccounts { get; set; }
@@ -103,6 +101,7 @@ public partial class MotoServeContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("lastname");
+            entity.Property(e => e.MotorcycleId).HasColumnName("motorcycle_id");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -204,21 +203,6 @@ public partial class MotoServeContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("status");
             entity.Property(e => e.Time).HasColumnName("time");
-        });
-
-        modelBuilder.Entity<MaintenanceType>(entity =>
-        {
-            entity.HasKey(e => e.MaintenanceId);
-
-            entity.ToTable("MaintenanceType");
-
-            entity.Property(e => e.MaintenanceId)
-                .ValueGeneratedNever()
-                .HasColumnName("maintenance_id");
-            entity.Property(e => e.ListOfMaintenance)
-                .HasColumnType("text")
-                .HasColumnName("list_of_maintenance");
-            entity.Property(e => e.MechanicId).HasColumnName("mechanic_id");
         });
 
         modelBuilder.Entity<Mechanic>(entity =>

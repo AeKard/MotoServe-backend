@@ -14,4 +14,6 @@ public partial class Customer
     public string? Lastname { get; set; }
 
     public string? PhoneNumber { get; set; }
+
+    public int? MotorcycleId { get; set; }
 }
