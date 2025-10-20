@@ -16,4 +16,12 @@ public partial class Customer
     public string? PhoneNumber { get; set; }
 
     public int? MotorcycleId { get; set; }
+
+    public int? PaymentId { get; set; }
+
+    public virtual ICollection<CustomerAccount> CustomerAccounts { get; set; } = new List<CustomerAccount>();
+
+    public virtual CustomerMotorcycle? Motorcycle { get; set; }
+
+    public virtual PaymentTable? Payment { get; set; }
 }

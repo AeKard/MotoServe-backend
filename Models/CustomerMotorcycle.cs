@@ -14,4 +14,8 @@ public partial class CustomerMotorcycle
     public string? MotorModel { get; set; }
 
     public string? MotorStatus { get; set; }
+
+    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
+
+    public virtual ICollection<MaintenanceHistory> MaintenanceHistories { get; set; } = new List<MaintenanceHistory>();
 }

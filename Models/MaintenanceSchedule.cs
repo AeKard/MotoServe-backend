@@ -12,4 +12,6 @@ public partial class MaintenanceSchedule
     public TimeOnly? Time { get; set; }
 
     public string? Status { get; set; }
+
+    public virtual ICollection<MaintenanceHistory> MaintenanceHistories { get; set; } = new List<MaintenanceHistory>();
 }

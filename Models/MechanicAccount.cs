@@ -12,4 +12,6 @@ public partial class MechanicAccount
     public string? Password { get; set; }
 
     public int? MechanicId { get; set; }
+
+    public virtual Mechanic? Mechanic { get; set; }
 }

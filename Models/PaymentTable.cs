@@ -16,4 +16,6 @@ public partial class PaymentTable
     public decimal? Amount { get; set; }
 
     public DateOnly? Due { get; set; }
+
+    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 }

@@ -12,4 +12,6 @@ public partial class ReceptionistAccount
     public string? Password { get; set; }
 
     public int? ReceptionistId { get; set; }
+
+    public virtual Receptionist? Receptionist { get; set; }
 }

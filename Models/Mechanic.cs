@@ -14,4 +14,10 @@ public partial class Mechanic
     public string? PhoneNumber { get; set; }
 
     public string? MotorExpertise { get; set; }
+
+    public virtual ICollection<MaintenanceHistory> MaintenanceHistories { get; set; } = new List<MaintenanceHistory>();
+
+    public virtual ICollection<MaintenanceType> MaintenanceTypes { get; set; } = new List<MaintenanceType>();
+
+    public virtual ICollection<MechanicAccount> MechanicAccounts { get; set; } = new List<MechanicAccount>();
 }
