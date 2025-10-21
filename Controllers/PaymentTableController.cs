@@ -9,8 +9,6 @@ using backend.Models;
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     public class PaymentTableController : Controller
     {
         private readonly MotoServeContext _context;
@@ -23,7 +21,8 @@ namespace backend.Controllers
         // GET: PaymentTable
         public async Task<IActionResult> Index()
         {
-            return View(await _context.PaymentTables.ToListAsync());
+            var motoServeContext = _context.PaymentTables.Include(p => p.Maintenance);
+            return View(await motoServeContext.ToListAsync());
         }
 
         // GET: PaymentTable/Details/5
@@ -35,6 +34,7 @@ namespace backend.Controllers
             }
 
             var paymentTable = await _context.PaymentTables
+                .Include(p => p.Maintenance)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (paymentTable == null)
             {
@@ -47,6 +47,7 @@ namespace backend.Controllers
         // GET: PaymentTable/Create
         public IActionResult Create()
         {
+            ViewData["MaintenanceId"] = new SelectList(_context.MaintenanceHistories, "Id", "Id");
             return View();
         }
 
@@ -55,7 +56,7 @@ namespace backend.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Invoice,PaymentStatus,CustomerId,Amount,Due")] PaymentTable paymentTable)
+        public async Task<IActionResult> Create([Bind("Id,Invoice,PaymentStatus,Amount,Due,MaintenanceId")] PaymentTable paymentTable)
         {
             if (ModelState.IsValid)
             {
@@ -63,6 +64,7 @@ namespace backend.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MaintenanceId"] = new SelectList(_context.MaintenanceHistories, "Id", "Id", paymentTable.MaintenanceId);
             return View(paymentTable);
         }
 
@@ -79,6 +81,7 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
+            ViewData["MaintenanceId"] = new SelectList(_context.MaintenanceHistories, "Id", "Id", paymentTable.MaintenanceId);
             return View(paymentTable);
         }
 
@@ -87,7 +90,7 @@ namespace backend.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Invoice,PaymentStatus,CustomerId,Amount,Due")] PaymentTable paymentTable)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Invoice,PaymentStatus,Amount,Due,MaintenanceId")] PaymentTable paymentTable)
         {
             if (id != paymentTable.Id)
             {
@@ -114,6 +117,7 @@ namespace backend.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MaintenanceId"] = new SelectList(_context.MaintenanceHistories, "Id", "Id", paymentTable.MaintenanceId);
             return View(paymentTable);
         }
 
@@ -126,6 +130,7 @@ namespace backend.Controllers
             }
 
             var paymentTable = await _context.PaymentTables
+                .Include(p => p.Maintenance)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (paymentTable == null)
             {

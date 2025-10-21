@@ -9,8 +9,6 @@ using backend.Models;
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     public class MaintenanceHistoryController : Controller
     {
         private readonly MotoServeContext _context;
@@ -23,7 +21,8 @@ namespace backend.Controllers
         // GET: MaintenanceHistory
         public async Task<IActionResult> Index()
         {
-            return View(await _context.MaintenanceHistories.ToListAsync());
+            var motoServeContext = _context.MaintenanceHistories.Include(m => m.Mechanic).Include(m => m.Motorcycle).Include(m => m.Schedule);
+            return View(await motoServeContext.ToListAsync());
         }
 
         // GET: MaintenanceHistory/Details/5
@@ -35,6 +34,9 @@ namespace backend.Controllers
             }
 
             var maintenanceHistory = await _context.MaintenanceHistories
+                .Include(m => m.Mechanic)
+                .Include(m => m.Motorcycle)
+                .Include(m => m.Schedule)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (maintenanceHistory == null)
             {
@@ -47,6 +49,9 @@ namespace backend.Controllers
         // GET: MaintenanceHistory/Create
         public IActionResult Create()
         {
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId");
+            ViewData["MotorcycleId"] = new SelectList(_context.CustomerMotorcycles, "MotorcycleId", "MotorcycleId");
+            ViewData["ScheduleId"] = new SelectList(_context.MaintenanceSchedules, "ScheduleId", "ScheduleId");
             return View();
         }
 
@@ -55,7 +60,7 @@ namespace backend.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,MotorcycleId,MechanicId,CustomerId,MaintenanceId,ScheduleId")] MaintenanceHistory maintenanceHistory)
+        public async Task<IActionResult> Create([Bind("Id,MotorcycleId,MechanicId,ScheduleId,Notes")] MaintenanceHistory maintenanceHistory)
         {
             if (ModelState.IsValid)
             {
@@ -63,6 +68,9 @@ namespace backend.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", maintenanceHistory.MechanicId);
+            ViewData["MotorcycleId"] = new SelectList(_context.CustomerMotorcycles, "MotorcycleId", "MotorcycleId", maintenanceHistory.MotorcycleId);
+            ViewData["ScheduleId"] = new SelectList(_context.MaintenanceSchedules, "ScheduleId", "ScheduleId", maintenanceHistory.ScheduleId);
             return View(maintenanceHistory);
         }
 
@@ -79,6 +87,9 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", maintenanceHistory.MechanicId);
+            ViewData["MotorcycleId"] = new SelectList(_context.CustomerMotorcycles, "MotorcycleId", "MotorcycleId", maintenanceHistory.MotorcycleId);
+            ViewData["ScheduleId"] = new SelectList(_context.MaintenanceSchedules, "ScheduleId", "ScheduleId", maintenanceHistory.ScheduleId);
             return View(maintenanceHistory);
         }
 
@@ -87,7 +98,7 @@ namespace backend.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,MotorcycleId,MechanicId,CustomerId,MaintenanceId,ScheduleId")] MaintenanceHistory maintenanceHistory)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,MotorcycleId,MechanicId,ScheduleId,Notes")] MaintenanceHistory maintenanceHistory)
         {
             if (id != maintenanceHistory.Id)
             {
@@ -114,6 +125,9 @@ namespace backend.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", maintenanceHistory.MechanicId);
+            ViewData["MotorcycleId"] = new SelectList(_context.CustomerMotorcycles, "MotorcycleId", "MotorcycleId", maintenanceHistory.MotorcycleId);
+            ViewData["ScheduleId"] = new SelectList(_context.MaintenanceSchedules, "ScheduleId", "ScheduleId", maintenanceHistory.ScheduleId);
             return View(maintenanceHistory);
         }
 
@@ -126,6 +140,9 @@ namespace backend.Controllers
             }
 
             var maintenanceHistory = await _context.MaintenanceHistories
+                .Include(m => m.Mechanic)
+                .Include(m => m.Motorcycle)
+                .Include(m => m.Schedule)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (maintenanceHistory == null)
             {

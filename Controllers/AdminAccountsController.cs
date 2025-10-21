@@ -47,52 +47,74 @@ namespace backend.Controllers
 
             return Ok(adminAccounts);
         }
-
         [HttpPost("create-admin-account")]
         public async Task<IActionResult> CreateAdminAccount([FromBody] CreateAdminAccountDto dto)
         {
-            try
+            if (dto == null)
+                return BadRequest("Invalid data.");
+
+            // Create the new AdminAccount with a linked Admin
+            var account = new AdminAccount
             {
-
-
-                if (dto == null)
-                    return BadRequest("Invalid data.");
-
-                // Create the new AdminAccount with a linked Admin
-                var account = new AdminAccount
+                Email = dto.Email,
+                Password = dto.Password,
+                Admin = new Admin
                 {
-                    Email = dto.Email,
-                    Password = dto.Password,
-                    Admin = new Admin
-                    {
-                        Username = dto.Username,
-                        Firstname = dto.Firstname,
-                        Lastname = dto.Lastname
-                    }
-                };
+                    Username = dto.Username,
+                    Firstname = dto.Firstname,
+                    Lastname = dto.Lastname
+                }
+            };
 
-                // Add and save both entities in one go
-                _context.AdminAccounts.Add(account);
-                await _context.SaveChangesAsync();
+            Console.WriteLine(account.AdminId);
+            // Add and save both entities in one go
+            _context.AdminAccounts.Add(account);
+            await _context.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    message = "Admin account created successfully",
-                    adminAccount = new
-                    {
-                        id = account.Id,
-                        email = account.Email,
-                        username = account.Admin.Username,
-                        firstname = account.Admin.Firstname,
-                        lastname = account.Admin.Lastname
-                    }
-                });
-            }
-            catch (Exception ex)
+            return Ok(new
             {
-                Console.WriteLine($"❌ ERROR: {ex.Message}");
-                return StatusCode(500, new { error = ex.Message });
-            }
+                message = "Admin account created successfully",
+                adminAccount = new
+                {
+                    id = account.Id,
+                    email = account.Email,
+                    username = account.Admin.Username,
+                    firstname = account.Admin.Firstname,
+                    lastname = account.Admin.Lastname
+                }
+            });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAdminAccount(int id, [FromBody] CreateAdminAccountDto dto)
+        {
+            var account = await _context.AdminAccounts
+                .Include(a => a.Admin)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (account == null) return NotFound();
+
+            // only update non-null fields (so if frontend sends nulls, they’re ignored)
+            if (!string.IsNullOrEmpty(dto.Email)) account.Email = dto.Email;
+            if (!string.IsNullOrEmpty(dto.Password)) account.Password = dto.Password;
+            if (!string.IsNullOrEmpty(dto.Username)) account.Admin.Username = dto.Username;
+            if (!string.IsNullOrEmpty(dto.Firstname)) account.Admin.Firstname = dto.Firstname;
+            if (!string.IsNullOrEmpty(dto.Lastname)) account.Admin.Lastname = dto.Lastname;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Admin account updated successfully" });
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAdminAccount(int id)
+        {
+            var account = await _context.AdminAccounts.FindAsync(id);
+            if (account == null) return NotFound();
+
+            _context.AdminAccounts.Remove(account);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Admin account deleted successfully" });
         }
     }
 }

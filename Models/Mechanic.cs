@@ -7,9 +7,9 @@ public partial class Mechanic
 {
     public int MechanicId { get; set; }
 
-    public string? Firstname { get; set; }
+    public string Firstname { get; set; } = null!;
 
-    public string? Lastname { get; set; }
+    public string Lastname { get; set; } = null!;
 
     public string? PhoneNumber { get; set; }
 
@@ -19,5 +19,5 @@ public partial class Mechanic
 
     public virtual ICollection<MaintenanceType> MaintenanceTypes { get; set; } = new List<MaintenanceType>();
 
-    public virtual ICollection<MechanicAccount> MechanicAccounts { get; set; } = new List<MechanicAccount>();
+    public virtual MechanicAccount? MechanicAccount { get; set; }
 }

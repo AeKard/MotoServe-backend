@@ -9,22 +9,23 @@ using backend.Models;
 
 namespace backend.Controllers
 {
-    public class AdminsController : Controller
+    public class MaintenanceTypeController : Controller
     {
         private readonly MotoServeContext _context;
 
-        public AdminsController(MotoServeContext context)
+        public MaintenanceTypeController(MotoServeContext context)
         {
             _context = context;
         }
 
-        // GET: Admins
+        // GET: MaintenanceType
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Admins.ToListAsync());
+            var motoServeContext = _context.MaintenanceTypes.Include(m => m.Mechanic);
+            return View(await motoServeContext.ToListAsync());
         }
 
-        // GET: Admins/Details/5
+        // GET: MaintenanceType/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -32,39 +33,42 @@ namespace backend.Controllers
                 return NotFound();
             }
 
-            var admin = await _context.Admins
-                .FirstOrDefaultAsync(m => m.AdminId == id);
-            if (admin == null)
+            var maintenanceType = await _context.MaintenanceTypes
+                .Include(m => m.Mechanic)
+                .FirstOrDefaultAsync(m => m.MaintenanceId == id);
+            if (maintenanceType == null)
             {
                 return NotFound();
             }
 
-            return View(admin);
+            return View(maintenanceType);
         }
 
-        // GET: Admins/Create
+        // GET: MaintenanceType/Create
         public IActionResult Create()
         {
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId");
             return View();
         }
 
-        // POST: Admins/Create
+        // POST: MaintenanceType/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AdminId,Username,Firstname,Lastname")] Admin admin)
+        public async Task<IActionResult> Create([Bind("MaintenanceId,MaintenanceName,BasePrice,Description,MechanicId")] MaintenanceType maintenanceType)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(admin);
+                _context.Add(maintenanceType);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(admin);
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", maintenanceType.MechanicId);
+            return View(maintenanceType);
         }
 
-        // GET: Admins/Edit/5
+        // GET: MaintenanceType/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -72,22 +76,23 @@ namespace backend.Controllers
                 return NotFound();
             }
 
-            var admin = await _context.Admins.FindAsync(id);
-            if (admin == null)
+            var maintenanceType = await _context.MaintenanceTypes.FindAsync(id);
+            if (maintenanceType == null)
             {
                 return NotFound();
             }
-            return View(admin);
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", maintenanceType.MechanicId);
+            return View(maintenanceType);
         }
 
-        // POST: Admins/Edit/5
+        // POST: MaintenanceType/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AdminId,Username,Firstname,Lastname")] Admin admin)
+        public async Task<IActionResult> Edit(int id, [Bind("MaintenanceId,MaintenanceName,BasePrice,Description,MechanicId")] MaintenanceType maintenanceType)
         {
-            if (id != admin.AdminId)
+            if (id != maintenanceType.MaintenanceId)
             {
                 return NotFound();
             }
@@ -96,12 +101,12 @@ namespace backend.Controllers
             {
                 try
                 {
-                    _context.Update(admin);
+                    _context.Update(maintenanceType);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AdminExists(admin.AdminId))
+                    if (!MaintenanceTypeExists(maintenanceType.MaintenanceId))
                     {
                         return NotFound();
                     }
@@ -112,10 +117,11 @@ namespace backend.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(admin);
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", maintenanceType.MechanicId);
+            return View(maintenanceType);
         }
 
-        // GET: Admins/Delete/5
+        // GET: MaintenanceType/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -123,34 +129,35 @@ namespace backend.Controllers
                 return NotFound();
             }
 
-            var admin = await _context.Admins
-                .FirstOrDefaultAsync(m => m.AdminId == id);
-            if (admin == null)
+            var maintenanceType = await _context.MaintenanceTypes
+                .Include(m => m.Mechanic)
+                .FirstOrDefaultAsync(m => m.MaintenanceId == id);
+            if (maintenanceType == null)
             {
                 return NotFound();
             }
 
-            return View(admin);
+            return View(maintenanceType);
         }
 
-        // POST: Admins/Delete/5
+        // POST: MaintenanceType/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var admin = await _context.Admins.FindAsync(id);
-            if (admin != null)
+            var maintenanceType = await _context.MaintenanceTypes.FindAsync(id);
+            if (maintenanceType != null)
             {
-                _context.Admins.Remove(admin);
+                _context.MaintenanceTypes.Remove(maintenanceType);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AdminExists(int id)
+        private bool MaintenanceTypeExists(int id)
         {
-            return _context.Admins.Any(e => e.AdminId == id);
+            return _context.MaintenanceTypes.Any(e => e.MaintenanceId == id);
         }
     }
 }

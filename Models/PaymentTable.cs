@@ -7,15 +7,15 @@ public partial class PaymentTable
 {
     public int Id { get; set; }
 
-    public string? Invoice { get; set; }
+    public string Invoice { get; set; } = null!;
 
     public string? PaymentStatus { get; set; }
 
-    public int? CustomerId { get; set; }
+    public decimal Amount { get; set; }
 
-    public decimal? Amount { get; set; }
+    public DateOnly Due { get; set; }
 
-    public DateOnly? Due { get; set; }
+    public int? MaintenanceId { get; set; }
 
-    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
+    public virtual MaintenanceHistory? Maintenance { get; set; }
 }

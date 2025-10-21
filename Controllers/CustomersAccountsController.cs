@@ -9,8 +9,6 @@ using backend.Models;
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     public class CustomersAccountsController : Controller
     {
         private readonly MotoServeContext _context;
@@ -23,7 +21,8 @@ namespace backend.Controllers
         // GET: CustomersAccounts
         public async Task<IActionResult> Index()
         {
-            return View(await _context.CustomerAccounts.ToListAsync());
+            var motoServeContext = _context.CustomerAccounts.Include(c => c.Customer);
+            return View(await motoServeContext.ToListAsync());
         }
 
         // GET: CustomersAccounts/Details/5
@@ -35,6 +34,7 @@ namespace backend.Controllers
             }
 
             var customerAccount = await _context.CustomerAccounts
+                .Include(c => c.Customer)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (customerAccount == null)
             {
@@ -47,6 +47,7 @@ namespace backend.Controllers
         // GET: CustomersAccounts/Create
         public IActionResult Create()
         {
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId");
             return View();
         }
 
@@ -63,6 +64,7 @@ namespace backend.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", customerAccount.CustomerId);
             return View(customerAccount);
         }
 
@@ -79,6 +81,7 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", customerAccount.CustomerId);
             return View(customerAccount);
         }
 
@@ -114,6 +117,7 @@ namespace backend.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", customerAccount.CustomerId);
             return View(customerAccount);
         }
 
@@ -126,6 +130,7 @@ namespace backend.Controllers
             }
 
             var customerAccount = await _context.CustomerAccounts
+                .Include(c => c.Customer)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (customerAccount == null)
             {

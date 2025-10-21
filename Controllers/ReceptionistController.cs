@@ -9,8 +9,6 @@ using backend.Models;
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     public class ReceptionistController : Controller
     {
         private readonly MotoServeContext _context;

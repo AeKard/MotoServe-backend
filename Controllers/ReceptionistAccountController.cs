@@ -9,8 +9,6 @@ using backend.Models;
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     public class ReceptionistAccountController : Controller
     {
         private readonly MotoServeContext _context;
@@ -23,7 +21,8 @@ namespace backend.Controllers
         // GET: ReceptionistAccount
         public async Task<IActionResult> Index()
         {
-            return View(await _context.ReceptionistAccounts.ToListAsync());
+            var motoServeContext = _context.ReceptionistAccounts.Include(r => r.Receptionist);
+            return View(await motoServeContext.ToListAsync());
         }
 
         // GET: ReceptionistAccount/Details/5
@@ -35,6 +34,7 @@ namespace backend.Controllers
             }
 
             var receptionistAccount = await _context.ReceptionistAccounts
+                .Include(r => r.Receptionist)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (receptionistAccount == null)
             {
@@ -47,6 +47,7 @@ namespace backend.Controllers
         // GET: ReceptionistAccount/Create
         public IActionResult Create()
         {
+            ViewData["ReceptionistId"] = new SelectList(_context.Receptionists, "ReceptionistId", "ReceptionistId");
             return View();
         }
 
@@ -63,6 +64,7 @@ namespace backend.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ReceptionistId"] = new SelectList(_context.Receptionists, "ReceptionistId", "ReceptionistId", receptionistAccount.ReceptionistId);
             return View(receptionistAccount);
         }
 
@@ -79,6 +81,7 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
+            ViewData["ReceptionistId"] = new SelectList(_context.Receptionists, "ReceptionistId", "ReceptionistId", receptionistAccount.ReceptionistId);
             return View(receptionistAccount);
         }
 
@@ -114,6 +117,7 @@ namespace backend.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ReceptionistId"] = new SelectList(_context.Receptionists, "ReceptionistId", "ReceptionistId", receptionistAccount.ReceptionistId);
             return View(receptionistAccount);
         }
 
@@ -126,6 +130,7 @@ namespace backend.Controllers
             }
 
             var receptionistAccount = await _context.ReceptionistAccounts
+                .Include(r => r.Receptionist)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (receptionistAccount == null)
             {

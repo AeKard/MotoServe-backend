@@ -9,8 +9,6 @@ using backend.Models;
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     public class MechanicAccountController : Controller
     {
         private readonly MotoServeContext _context;
@@ -23,7 +21,8 @@ namespace backend.Controllers
         // GET: MechanicAccount
         public async Task<IActionResult> Index()
         {
-            return View(await _context.MechanicAccounts.ToListAsync());
+            var motoServeContext = _context.MechanicAccounts.Include(m => m.Mechanic);
+            return View(await motoServeContext.ToListAsync());
         }
 
         // GET: MechanicAccount/Details/5
@@ -35,6 +34,7 @@ namespace backend.Controllers
             }
 
             var mechanicAccount = await _context.MechanicAccounts
+                .Include(m => m.Mechanic)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (mechanicAccount == null)
             {
@@ -47,6 +47,7 @@ namespace backend.Controllers
         // GET: MechanicAccount/Create
         public IActionResult Create()
         {
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId");
             return View();
         }
 
@@ -63,6 +64,7 @@ namespace backend.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", mechanicAccount.MechanicId);
             return View(mechanicAccount);
         }
 
@@ -79,6 +81,7 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", mechanicAccount.MechanicId);
             return View(mechanicAccount);
         }
 
@@ -114,6 +117,7 @@ namespace backend.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MechanicId"] = new SelectList(_context.Mechanics, "MechanicId", "MechanicId", mechanicAccount.MechanicId);
             return View(mechanicAccount);
         }
 
@@ -126,6 +130,7 @@ namespace backend.Controllers
             }
 
             var mechanicAccount = await _context.MechanicAccounts
+                .Include(m => m.Mechanic)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (mechanicAccount == null)
             {

@@ -13,5 +13,5 @@ public partial class Receptionist
 
     public string? Lastname { get; set; }
 
-    public virtual ICollection<ReceptionistAccount> ReceptionistAccounts { get; set; } = new List<ReceptionistAccount>();
+    public virtual ReceptionistAccount? ReceptionistAccount { get; set; }
 }

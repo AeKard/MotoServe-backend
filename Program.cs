@@ -1,4 +1,4 @@
-using backend.Models; // ✅ adjust if your namespace differs
+using backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

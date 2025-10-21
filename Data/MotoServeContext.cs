@@ -29,6 +29,8 @@ public partial class MotoServeContext : DbContext
 
     public virtual DbSet<MaintenanceHistory> MaintenanceHistories { get; set; }
 
+    public virtual DbSet<MaintenanceHistoryType> MaintenanceHistoryTypes { get; set; }
+
     public virtual DbSet<MaintenanceSchedule> MaintenanceSchedules { get; set; }
 
     public virtual DbSet<MaintenanceType> MaintenanceTypes { get; set; }
@@ -44,327 +46,253 @@ public partial class MotoServeContext : DbContext
     public virtual DbSet<ReceptionistAccount> ReceptionistAccounts { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=localhost;Database=MotoServe;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // ADMIN
         modelBuilder.Entity<Admin>(entity =>
         {
+            entity.HasKey(e => e.AdminId);
+            entity.ToTable("Admin");
+
             entity.Property(e => e.AdminId).HasColumnName("admin_id");
-            entity.Property(e => e.Firstname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("firstname");
-            entity.Property(e => e.Lastname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("lastname");
-            entity.Property(e => e.Username)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("username");
+            entity.Property(e => e.Firstname).HasMaxLength(100).IsUnicode(false).HasColumnName("firstname");
+            entity.Property(e => e.Lastname).HasMaxLength(100).IsUnicode(false).HasColumnName("lastname");
+            entity.Property(e => e.Username).HasMaxLength(100).IsUnicode(false).HasColumnName("username");
+
+            entity.HasOne(e => e.AdminAccount)
+                .WithOne(a => a.Admin)
+                .HasForeignKey<AdminAccount>(a => a.AdminId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Admin_AdminAccount");
         });
 
         modelBuilder.Entity<AdminAccount>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.ToTable("AdminAccount");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.AdminId).HasColumnName("admin_id");
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("email");
-            entity.Property(e => e.Password)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("password");
+            entity.HasIndex(e => e.AdminId).IsUnique();
+            entity.HasIndex(e => e.Email).IsUnique();
 
-            entity.HasOne(d => d.Admin).WithMany(p => p.AdminAccounts)
-                .HasForeignKey(d => d.AdminId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_AdminAccount_Admins");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AdminId).HasColumnName("admin_id");
+            entity.Property(e => e.Email).HasMaxLength(255).IsUnicode(false).HasColumnName("email");
+            entity.Property(e => e.Password).HasMaxLength(255).IsUnicode(false).HasColumnName("password");
         });
 
+        // CUSTOMER + ACCOUNT
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.Property(e => e.CustomerId)
-                .ValueGeneratedNever()
-                .HasColumnName("customer_id");
-            entity.Property(e => e.Firstname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("firstname");
-            entity.Property(e => e.Lastname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("lastname");
-            entity.Property(e => e.MotorcycleId).HasColumnName("motorcycle_id");
-            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
-            entity.Property(e => e.PhoneNumber)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("phone_number");
-            entity.Property(e => e.Username)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("username");
+            entity.HasKey(e => e.CustomerId);
+            entity.ToTable("Customer");
 
-            entity.HasOne(d => d.Motorcycle).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.MotorcycleId)
-                .HasConstraintName("FK_Customers_CustomerMotorcycle");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.Firstname).HasMaxLength(100).IsUnicode(false).HasColumnName("firstname");
+            entity.Property(e => e.Lastname).HasMaxLength(100).IsUnicode(false).HasColumnName("lastname");
+            entity.Property(e => e.PhoneNumber).HasMaxLength(50).IsUnicode(false).HasColumnName("phone_number");
+            entity.Property(e => e.Username).HasMaxLength(100).IsUnicode(false).HasColumnName("username");
 
-            entity.HasOne(d => d.Payment).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.PaymentId)
-                .HasConstraintName("FK_Customers_PaymentTable");
+            entity.HasOne(e => e.CustomerAccount)
+                .WithOne(a => a.Customer)
+                .HasForeignKey<CustomerAccount>(a => a.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Customer_CustomerAccount");
         });
 
         modelBuilder.Entity<CustomerAccount>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.ToTable("CustomerAccount");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("email");
-            entity.Property(e => e.Password)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("password");
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.CustomerId).IsUnique();
 
-            entity.HasOne(d => d.Customer).WithMany(p => p.CustomerAccounts)
-                .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK_CustomerAccount_Customers");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.Email).HasMaxLength(255).IsUnicode(false).HasColumnName("email");
+            entity.Property(e => e.Password).HasMaxLength(255).IsUnicode(false).HasColumnName("password");
         });
 
         modelBuilder.Entity<CustomerMotorcycle>(entity =>
         {
             entity.HasKey(e => e.MotorcycleId);
-
             entity.ToTable("CustomerMotorcycle");
 
-            entity.Property(e => e.MotorcycleId)
-                .ValueGeneratedNever()
-                .HasColumnName("motorcycle_id");
+            entity.Property(e => e.MotorcycleId).HasColumnName("motorcycle_id");
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
-            entity.Property(e => e.MotorBrand)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("motor_brand");
-            entity.Property(e => e.MotorModel)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("motor_model");
-            entity.Property(e => e.MotorStatus)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("motor_status");
+            entity.Property(e => e.MotorBrand).HasMaxLength(100).IsUnicode(false).HasColumnName("motor_brand");
+            entity.Property(e => e.MotorModel).HasMaxLength(100).IsUnicode(false).HasColumnName("motor_model");
+            entity.Property(e => e.MotorStatus).HasMaxLength(50).IsUnicode(false).HasColumnName("motor_status");
+
+            entity.HasOne(d => d.Customer)
+                .WithMany(p => p.CustomerMotorcycles)
+                .HasForeignKey(d => d.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_CustomerMotorcycle_Customer");
         });
 
+        // INVENTORY
         modelBuilder.Entity<Inventory>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.ToTable("Inventory");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.Material)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("material");
-            entity.Property(e => e.Price)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("price");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Material).HasMaxLength(100).IsUnicode(false).HasColumnName("material");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
-            entity.Property(e => e.TotalProfit)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("total_profit");
+            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)").HasColumnName("price");
+            entity.Property(e => e.TotalProfit).HasColumnType("decimal(10, 2)").HasColumnName("total_profit");
         });
 
-        modelBuilder.Entity<MaintenanceHistory>(entity =>
-        {
-            entity.ToTable("MaintenanceHistory");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
-            entity.Property(e => e.MaintenanceId).HasColumnName("maintenance_id");
-            entity.Property(e => e.MechanicId).HasColumnName("mechanic_id");
-            entity.Property(e => e.MotorcycleId).HasColumnName("motorcycle_id");
-            entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
-
-            entity.HasOne(d => d.Maintenance).WithMany(p => p.MaintenanceHistories)
-                .HasForeignKey(d => d.MaintenanceId)
-                .HasConstraintName("FK_MaintenanceHistory_MaintenanceType");
-
-            entity.HasOne(d => d.Mechanic).WithMany(p => p.MaintenanceHistories)
-                .HasForeignKey(d => d.MechanicId)
-                .HasConstraintName("FK_MaintenanceHistory_Mechanics");
-
-            entity.HasOne(d => d.Motorcycle).WithMany(p => p.MaintenanceHistories)
-                .HasForeignKey(d => d.MotorcycleId)
-                .HasConstraintName("FK_MaintenanceHistory_CustomerMotorcycle");
-
-            entity.HasOne(d => d.Schedule).WithMany(p => p.MaintenanceHistories)
-                .HasForeignKey(d => d.ScheduleId)
-                .HasConstraintName("FK_MaintenanceHistory_MaintenanceSchedule");
-        });
-
+        // MAINTENANCE SCHEDULE
         modelBuilder.Entity<MaintenanceSchedule>(entity =>
         {
             entity.HasKey(e => e.ScheduleId);
-
             entity.ToTable("MaintenanceSchedule");
 
-            entity.Property(e => e.ScheduleId)
-                .ValueGeneratedNever()
-                .HasColumnName("schedule_id");
+            entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
             entity.Property(e => e.Date).HasColumnName("date");
+            entity.Property(e => e.Time).HasColumnName("time");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false)
+                .HasDefaultValue("Pending")
                 .HasColumnName("status");
-            entity.Property(e => e.Time).HasColumnName("time");
         });
 
+        // MAINTENANCE TYPE
         modelBuilder.Entity<MaintenanceType>(entity =>
         {
             entity.HasKey(e => e.MaintenanceId);
-
             entity.ToTable("MaintenanceType");
 
-            entity.Property(e => e.MaintenanceId)
-                .ValueGeneratedNever()
-                .HasColumnName("maintenance_id");
-            entity.Property(e => e.MaintenanceType1)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("maintenance_type");
+            entity.Property(e => e.MaintenanceId).HasColumnName("maintenance_id");
+            entity.Property(e => e.MaintenanceName).HasMaxLength(150).IsUnicode(false).HasColumnName("maintenance_name");
+            entity.Property(e => e.Description).HasMaxLength(255).IsUnicode(false).HasColumnName("description");
+            entity.Property(e => e.BasePrice).HasColumnType("decimal(10, 2)").HasColumnName("base_price");
             entity.Property(e => e.MechanicId).HasColumnName("mechanic_id");
 
-            entity.HasOne(d => d.Mechanic).WithMany(p => p.MaintenanceTypes)
+            entity.HasOne(d => d.Mechanic)
+                .WithMany(p => p.MaintenanceTypes)
                 .HasForeignKey(d => d.MechanicId)
-                .HasConstraintName("FK_MaintenanceType_Mechanics");
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_MaintenanceType_Mechanic");
         });
 
+        // MAINTENANCE TYPE ASSIGNMENT (many-to-many)
+        modelBuilder.Entity<MaintenanceTypeAssignment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("MaintenanceTypeAssignment");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.MaintenanceTypeId).HasColumnName("maintenance_type_id");
+            entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
+
+            entity.HasOne(d => d.MaintenanceType)
+                .WithMany(p => p.MaintenanceTypeAssignments)
+                .HasForeignKey(d => d.MaintenanceTypeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_MaintenanceTypeAssignment_MaintenanceType");
+
+            entity.HasOne(d => d.MaintenanceSchedule)
+                .WithMany(p => p.MaintenanceTypeAssignments)
+                .HasForeignKey(d => d.ScheduleId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_MaintenanceTypeAssignment_MaintenanceSchedule");
+        });
+
+        // MECHANIC + ACCOUNT
         modelBuilder.Entity<Mechanic>(entity =>
         {
-            entity.Property(e => e.MechanicId)
-                .ValueGeneratedNever()
-                .HasColumnName("mechanic_id");
-            entity.Property(e => e.Firstname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("firstname");
-            entity.Property(e => e.Lastname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("lastname");
-            entity.Property(e => e.MotorExpertise)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("motor_expertise");
-            entity.Property(e => e.PhoneNumber)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("phone_number");
+            entity.HasKey(e => e.MechanicId);
+            entity.ToTable("Mechanic");
+
+            entity.Property(e => e.MechanicId).HasColumnName("mechanic_id");
+            entity.Property(e => e.Firstname).HasMaxLength(100).IsUnicode(false).HasColumnName("firstname");
+            entity.Property(e => e.Lastname).HasMaxLength(100).IsUnicode(false).HasColumnName("lastname");
+            entity.Property(e => e.PhoneNumber).HasMaxLength(50).IsUnicode(false).HasColumnName("phone_number");
+            entity.Property(e => e.MotorExpertise).HasMaxLength(100).IsUnicode(false).HasColumnName("motor_expertise");
+
+            entity.HasOne(e => e.MechanicAccount)
+                .WithOne(a => a.Mechanic)
+                .HasForeignKey<MechanicAccount>(a => a.MechanicId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Mechanic_MechanicAccount");
         });
 
         modelBuilder.Entity<MechanicAccount>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.ToTable("MechanicAccount");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("email");
-            entity.Property(e => e.MechanicId).HasColumnName("mechanic_id");
-            entity.Property(e => e.Password)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("password");
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.MechanicId).IsUnique();
 
-            entity.HasOne(d => d.Mechanic).WithMany(p => p.MechanicAccounts)
-                .HasForeignKey(d => d.MechanicId)
-                .HasConstraintName("FK_MechanicAccount_Mechanics");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.MechanicId).HasColumnName("mechanic_id");
+            entity.Property(e => e.Email).HasMaxLength(255).IsUnicode(false).HasColumnName("email");
+            entity.Property(e => e.Password).HasMaxLength(255).IsUnicode(false).HasColumnName("password");
         });
 
+        // PAYMENT
         modelBuilder.Entity<PaymentTable>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.ToTable("PaymentTable");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.Amount)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("amount");
-            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Invoice).HasMaxLength(100).IsUnicode(false).HasColumnName("invoice");
+            entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)").HasColumnName("amount");
+            entity.Property(e => e.PaymentStatus).HasMaxLength(50).IsUnicode(false).HasDefaultValue("Unpaid").HasColumnName("payment_status");
+            entity.Property(e => e.MaintenanceId).HasColumnName("maintenance_id");
             entity.Property(e => e.Due).HasColumnName("due");
-            entity.Property(e => e.Invoice)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("invoice");
-            entity.Property(e => e.PaymentStatus)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("payment_status");
+
+            entity.HasOne(d => d.Maintenance)
+                .WithMany(p => p.PaymentTables)
+                .HasForeignKey(d => d.MaintenanceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_PaymentTable_Maintenance");
         });
 
+        // RECEPTIONIST + ACCOUNT
         modelBuilder.Entity<Receptionist>(entity =>
         {
-            entity.Property(e => e.ReceptionistId)
-                .ValueGeneratedNever()
-                .HasColumnName("receptionist_id");
-            entity.Property(e => e.Firstname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("firstname");
-            entity.Property(e => e.Lastname)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("lastname");
-            entity.Property(e => e.Username)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("username");
+            entity.HasKey(e => e.ReceptionistId);
+            entity.ToTable("Receptionist");
+
+            entity.Property(e => e.ReceptionistId).HasColumnName("receptionist_id");
+            entity.Property(e => e.Firstname).HasMaxLength(100).IsUnicode(false).HasColumnName("firstname");
+            entity.Property(e => e.Lastname).HasMaxLength(100).IsUnicode(false).HasColumnName("lastname");
+            entity.Property(e => e.Username).HasMaxLength(100).IsUnicode(false).HasColumnName("username");
+
+            entity.HasOne(e => e.ReceptionistAccount)
+                .WithOne(a => a.Receptionist)
+                .HasForeignKey<ReceptionistAccount>(a => a.ReceptionistId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Receptionist_ReceptionistAccount");
         });
 
         modelBuilder.Entity<ReceptionistAccount>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.ToTable("ReceptionistAccount");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("email");
-            entity.Property(e => e.Password)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("password");
-            entity.Property(e => e.ReceptionistId).HasColumnName("receptionist_id");
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.ReceptionistId).IsUnique();
 
-            entity.HasOne(d => d.Receptionist).WithMany(p => p.ReceptionistAccounts)
-                .HasForeignKey(d => d.ReceptionistId)
-                .HasConstraintName("FK_ReceptionistAccount_Receptionists");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ReceptionistId).HasColumnName("receptionist_id");
+            entity.Property(e => e.Email).HasMaxLength(255).IsUnicode(false).HasColumnName("email");
+            entity.Property(e => e.Password).HasMaxLength(255).IsUnicode(false).HasColumnName("password");
         });
 
         OnModelCreatingPartial(modelBuilder);
     }
+
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
